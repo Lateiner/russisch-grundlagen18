@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Präfixe Multiple Choice</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --primary-light: #ebf5fb;
+            --success: #27ae60;
+            --error: #c0392b;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --border: #bdc3c7;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-top: 0;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .instruction {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #555;
+            font-size: 1.1rem;
+        }
+
+        /* --- Fragen Liste --- */
+        .question-list {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .question-card {
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 8px;
+            transition: box-shadow 0.2s;
+        }
+
+        .question-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        .sentence {
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .gap {
+            display: inline-block;
+            min-width: 50px;
+            border-bottom: 2px solid var(--primary);
+            color: var(--primary);
+            text-align: center;
+            padding: 0 5px;
+            font-weight: bold;
+        }
+
+        .signal-hint {
+            font-size: 0.85rem;
+            color: #95a5a6;
+            font-weight: normal;
+            margin-left: 10px;
+        }
+
+        /* --- Antwort Buttons (Radio Design) --- */
+        .options-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 Spalten Desktop */
+            gap: 10px;
+        }
+
+        /* Radio Input verstecken */
+        .options-group input[type="radio"] {
+            display: none;
+        }
+
+        /* Das Label als Button stylen */
+        .option-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            color: #555;
+        }
+
+        .option-btn:hover {
+            background-color: #ebf5fb;
+            border-color: #aed6f1;
+            color: var(--primary);
+        }
+
+        /* Selected State (durch das versteckte Radio gesteuert) */
+        input[type="radio"]:checked + .option-btn {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 3px 5px rgba(52, 152, 219, 0.3);
+        }
+
+        /* Feedback States (überschreibt Selected) */
+        .option-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: white !important;
+        }
+
+        .option-btn.incorrect {
+            background-color: var(--error) !important;
+            border-color: var(--error) !important;
+            color: white !important;
+            opacity: 0.6;
+        }
+
+        /* Buttons (Check/Reset) */
+        .btn-group {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        button:active { transform: translateY(1px); }
+        button:hover { opacity: 0.9; }
+        
+        .btn-check { background-color: var(--success); }
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solve { background-color: #f39c12; }
+
+        /* Feedback Text */
+        #feedback {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        #feedback.visible { display: block; }
+        .feedback-success { background-color: #d5f5e3; color: #196f3d; }
+        .feedback-error { background-color: #fadbd8; color: #943126; }
+
+        /* Mobile Optimierung */
+        @media (max-width: 600px) {
+            .options-group {
+                grid-template-columns: 1fr; /* Untereinander auf Mobile */
+            }
+            .option-btn {
+                padding: 15px; /* Größere Touch-Fläche */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Lückentext: Multiple Choice</h2>
+    <p class="instruction">Wählen Sie das passende Präfix für den Satz aus.</p>
+
+    <div class="question-list">
+        
+        <!-- Satz 1 -->
+        <div class="question-card" data-correct="pod">
+            <div class="sentence">
+                1. Машина <span class="gap">...</span>ехала к дому.
+                <span class="signal-hint">(Anschluss: к + Dat)</span>
+            </div>
+            <div class="options-group">
+                <label>
+                    <input type="radio" name="q1" value="pri">
+                    <span class="option-btn">при-</span>
+                </label>
+                <label>
+                    <input type="radio" name="q1" value="pod">
+                    <span class="option-btn">под-</span>
+                </label>
+                <label>
+                    <input type="radio" name="q1" value="do">
+                    <span class="option-btn">до-</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Satz 2 -->
+        <div class="question-card" data-correct="do">
+            <div class="sentence">
+                2. Машина <span class="gap">...</span>ехала до угла.
+                <span class="signal-hint">(Anschluss: до + Gen)</span>
+            </div>
+            <div class="options-group">
+                <label>
+                    <input type="radio" name="q2" value="do">
+                    <span class="option-btn">до-</span>
+                </label>
+                <label>
+                    <input type="radio" name="q2" value="pod">
+                    <span class="option-btn">под-</span>
+                </label>
+                <label>
+                    <input type="radio" name="q2" value="vy">
+                    <span class="option-btn">вы-</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Satz 3 -->
+        <div class="question-card" data-correct="pri">
+            <div class="sentence">
+                3. Туристы <span class="gap">...</span>ехали в Берлин вчера.
+                <span class="signal-hint">(Anschluss: в + Akk)</span>
+            </div>
+            <div class="options-group">
+                <label>
+                    <input type="radio" name="q3" value="pro">
+                    <span class="option-btn">про-</span>
+                </label>
+                <label>
+                    <input type="radio" name="q3" value="pri">
+                    <span class="option-btn">при-</span>
+                </label>
+                <label>
+                    <input type="radio" name="q3" value="pod">
+                    <span class="option-btn">под-</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Satz 4 -->
+        <div class="question-card" data-correct="podo">
+            <div class="sentence">
+                4. Я <span class="gap">...</span>шёл к тебе, но тебя не было.
+                <span class="signal-hint">(Annäherung: к + Dat)</span>
+            </div>
+            <div class="options-group">
+                <label>
+                    <input type="radio" name="q4" value="do">
+                    <span class="option-btn">до-</span>
+                </label>
+                <label>
+                    <input type="radio" name="q4" value="za">
+                    <span class="option-btn">за-</span>
+                </label>
+                <label>
+                    <input type="radio" name="q4" value="podo">
+                    <span class="option-btn">подо-</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Satz 5 -->
+        <div class="question-card" data-correct="do">
+            <div class="sentence">
+                5. Вы уже <span class="gap">...</span>шли до работы?
+                <span class="signal-hint">(Anschluss: до + Gen)</span>
+            </div>
+            <div class="options-group">
+                <label>
+                    <input type="radio" name="q5" value="pri">
+                    <span class="option-btn">при-</span>
+                </label>
+                <label>
+                    <input type="radio" name="q5" value="do">
+                    <span class="option-btn">до-</span>
+                </label>
+                <label>
+                    <input type="radio" name="q5" value="po">
+                    <span class="option-btn">по-</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Satz 6 -->
+        <div class="question-card" data-correct="pri">
+            <div class="sentence">
+                6. Гости <span class="gap">...</span>ходят к нам каждый вечер.
+                <span class="signal-hint">(Besuch/Ankunft: к + Dat)</span>
+            </div>
+            <div class="options-group">
+                <label>
+                    <input type="radio" name="q6" value="u">
+                    <span class="option-btn">у-</span>
+                </label>
+                <label>
+                    <input type="radio" name="q6" value="pro">
+                    <span class="option-btn">про-</span>
+                </label>
+                <label>
+                    <input type="radio" name="q6" value="pri">
+                    <span class="option-btn">при-</span>
+                </label>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Controls -->
+    <div class="btn-group">
+        <button class="btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="btn-reset" onclick="resetTask()">Zurücksetzen</button>
+        <button class="btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+    <div id="feedback"></div>
+</div>
+
+<script>
+    const questions = document.querySelectorAll('.question-card');
+    const feedbackEl = document.getElementById('feedback');
+
+    function checkAnswers() {
+        let correctCount = 0;
+        let answeredCount = 0;
+        const total = questions.length;
+
+        // Reset Styles
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            btn.classList.remove('correct', 'incorrect');
+        });
+
+        questions.forEach(card => {
+            const correctAnswer = card.getAttribute('data-correct');
+            const selectedRadio = card.querySelector('input:checked');
+
+            if (selectedRadio) {
+                answeredCount++;
+                const selectedBtn = selectedRadio.nextElementSibling; // The span.option-btn
+                
+                if (selectedRadio.value === correctAnswer) {
+                    selectedBtn.classList.add('correct');
+                    correctCount++;
+                } else {
+                    selectedBtn.classList.add('incorrect');
+                }
+            }
+        });
+
+        feedbackEl.classList.add('visible');
+        if (answeredCount < total) {
+            feedbackEl.textContent = `Bitte beantworten Sie alle ${total} Fragen.`;
+            feedbackEl.className = "feedback-error visible";
+        } else if (correctCount === total) {
+            feedbackEl.textContent = "Ausgezeichnet! Alles richtig.";
+            feedbackEl.className = "feedback-success visible";
+        } else {
+            feedbackEl.textContent = `Sie haben ${correctCount} von ${total} Fragen richtig beantwortet.`;
+            feedbackEl.className = "feedback-error visible";
+        }
+    }
+
+    function resetTask() {
+        // Uncheck all radios
+        document.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
+        // Remove styling classes
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            btn.classList.remove('correct', 'incorrect');
+        });
+        feedbackEl.textContent = "";
+        feedbackEl.className = "";
+    }
+
+    function showSolution() {
+        resetTask(); // Visuell zurücksetzen
+        
+        questions.forEach(card => {
+            const correctVal = card.getAttribute('data-correct');
+            const correctRadio = card.querySelector(`input[value="${correctVal}"]`);
+            if (correctRadio) {
+                correctRadio.checked = true;
+                // Da wir die CSS Klasse .correct auf checked inputs nicht automatisch anwenden (nur via JS für Validierung),
+                // fügen wir sie hier manuell hinzu, um die Lösung grün zu zeigen.
+                correctRadio.nextElementSibling.classList.add('correct');
+            }
+        });
+
+        feedbackEl.textContent = "Hier sind die Lösungen.";
+        feedbackEl.className = "feedback-success visible";
+    }
+</script>
+
+</body>
+</html>
