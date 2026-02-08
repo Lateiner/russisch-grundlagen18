@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Logik-Check (Kontext)</title>
+    <style>
+        :root {
+            --primary: #e67e22; /* Orange für Logik/Achtung */
+            --primary-light: #fbeee6;
+            --success: #27ae60;
+            --error: #c0392b;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --border: #bdc3c7;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-top: 0;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .instruction {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #555;
+            font-size: 1.1rem;
+        }
+
+        /* --- Fragen Grid --- */
+        .scenarios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .scenario-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-left: 5px solid var(--primary);
+            border-radius: 8px;
+            padding: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .scenario-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .scenario-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .scenario-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        .russian-sentence {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            flex-grow: 1; /* Drückt die Optionen nach unten */
+        }
+
+        .gap {
+            border-bottom: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 0 5px;
+        }
+
+        /* --- Optionen --- */
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: var(--primary-light);
+            border-color: #f5b041;
+        }
+
+        .option-label input[type="radio"] {
+            margin-right: 10px;
+            accent-color: var(--primary);
+            transform: scale(1.2);
+        }
+
+        .option-desc {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-left: auto; /* Schiebt Erklärung nach rechts */
+        }
+
+        /* Feedback States */
+        .option-label.correct {
+            background-color: #d5f5e3;
+            border-color: var(--success);
+            color: #196f3d;
+        }
+        .option-label.incorrect {
+            background-color: #fadbd8;
+            border-color: var(--error);
+            color: #943126;
+            opacity: 0.8;
+        }
+
+        /* Buttons */
+        .btn-group {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        button:active { transform: translateY(1px); }
+        button:hover { opacity: 0.9; }
+        
+        .btn-check { background-color: var(--success); }
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solve { background-color: #f39c12; }
+
+        /* Feedback Text */
+        #feedback {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        #feedback.visible { display: block; }
+        .feedback-success { background-color: #d5f5e3; color: #196f3d; }
+        .feedback-error { background-color: #fadbd8; color: #943126; }
+
+        @media (max-width: 600px) {
+            .scenarios-grid {
+                grid-template-columns: 1fr;
+            }
+            .option-desc {
+                display: none; /* Auf kleinen Handys Erklärung ausblenden für mehr Platz */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Logik-Check: Welches Verb passt?</h2>
+    <p class="instruction">Analysieren Sie die Situation und wählen Sie das logisch passende Verb.</p>
+
+    <div class="scenarios-grid">
+        
+        <!-- SCENARIO 1: Zug ist da (Resultat) -->
+        <div class="scenario-card" data-correct="pri">
+            <div class="scenario-header">
+                <span class="scenario-icon">🚉</span>
+                Situation: Der Zug steht schon am Gleis.
+            </div>
+            <div class="russian-sentence">Поезд уже <span class="gap">...</span> на вокзал.</div>
+            <div class="options-container">
+                <label class="option-label">
+                    <input type="radio" name="q1" value="pod">
+                    <span>подходит</span>
+                    <span class="option-desc">(fährt ein)</span>
+                </label>
+                <label class="option-label">
+                    <input type="radio" name="q1" value="pri">
+                    <span>пришёл</span>
+                    <span class="option-desc">(ist angekommen)</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- SCENARIO 2: Annäherung (Prozess) -->
+        <div class="scenario-card" data-correct="pod">
+            <div class="scenario-header">
+                <span class="scenario-icon">👀</span>
+                Situation: Sie sehen Ivan, er läuft gerade auf Sie zu.
+            </div>
+            <div class="russian-sentence">Смотри, Иван <span class="gap">...</span> к нам.</div>
+            <div class="options-container">
+                <label class="option-label">
+                    <input type="radio" name="q2" value="pod">
+                    <span>подходит</span>
+                    <span class="option-desc">(nähert sich)</span>
+                </label>
+                <label class="option-label">
+                    <input type="radio" name="q2" value="pri">
+                    <span>приходит</span>
+                    <span class="option-desc">(kommt an)</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- SCENARIO 3: Ziel nicht erreicht (Negiertes Resultat) -->
+        <div class="scenario-card" data-correct="do">
+            <div class="scenario-header">
+                <span class="scenario-icon">⛽</span>
+                Situation: Benzin leer. Wir haben die Stadt nicht erreicht.
+            </div>
+            <div class="russian-sentence">Мы не <span class="gap">...</span> до города.</div>
+            <div class="options-container">
+                <label class="option-label">
+                    <input type="radio" name="q3" value="pri">
+                    <span>приехали</span>
+                    <span class="option-desc">(angekommen)</span>
+                </label>
+                <label class="option-label">
+                    <input type="radio" name="q3" value="do">
+                    <span>доехали</span>
+                    <span class="option-desc">(bis hin geschafft)</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- SCENARIO 4: Resultat (Drinnen) -->
+        <div class="scenario-card" data-correct="pri">
+            <div class="scenario-header">
+                <span class="scenario-icon">🏢</span>
+                Situation: Ich bin jetzt im Büro und arbeite.
+            </div>
+            <div class="russian-sentence">Я <span class="gap">...</span> в офис в 9:00.</div>
+            <div class="options-container">
+                <label class="option-label">
+                    <input type="radio" name="q4" value="pod">
+                    <span>подошёл</span>
+                    <span class="option-desc">(bin herangegangen)</span>
+                </label>
+                <label class="option-label">
+                    <input type="radio" name="q4" value="pri">
+                    <span>пришёл</span>
+                    <span class="option-desc">(bin angekommen/drin)</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- SCENARIO 5: Resultat (In der Nähe/Davor) -->
+        <div class="scenario-card" data-correct="pod">
+            <div class="scenario-header">
+                <span class="scenario-icon">🚕</span>
+                Situation: Das Taxi steht jetzt direkt vor der Tür.
+            </div>
+            <div class="russian-sentence">Такси <span class="gap">...</span> к подъезду.</div>
+            <div class="options-container">
+                <label class="option-label">
+                    <input type="radio" name="q5" value="pod">
+                    <span>подъехало</span>
+                    <span class="option-desc">(ist vorgefahren)</span>
+                </label>
+                <label class="option-label">
+                    <input type="radio" name="q5" value="do">
+                    <span>доехало</span>
+                    <span class="option-desc">(hat die Strecke geschafft)</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- SCENARIO 6: Prozess (Kurz davor) -->
+        <div class="scenario-card" data-correct="pod">
+            <div class="scenario-header">
+                <span class="scenario-icon">🚌</span>
+                Situation: Der Bus biegt gerade um die Ecke zur Haltestelle.
+            </div>
+            <div class="russian-sentence">Автобус <span class="gap">...</span> к остановке.</div>
+            <div class="options-container">
+                <label class="option-label">
+                    <input type="radio" name="q6" value="pri">
+                    <span>приезжает</span>
+                    <span class="option-desc">(kommt allgemein an)</span>
+                </label>
+                <label class="option-label">
+                    <input type="radio" name="q6" value="pod">
+                    <span>подъезжает</span>
+                    <span class="option-desc">(fährt gerade heran)</span>
+                </label>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Controls -->
+    <div class="btn-group">
+        <button class="btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="btn-reset" onclick="resetTask()">Zurücksetzen</button>
+        <button class="btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+    <div id="feedback"></div>
+</div>
+
+<script>
+    const cards = document.querySelectorAll('.scenario-card');
+    const feedbackEl = document.getElementById('feedback');
+
+    function checkAnswers() {
+        let correctCount = 0;
+        let answeredCount = 0;
+        const total = cards.length;
+
+        // Reset Styles
+        document.querySelectorAll('.option-label').forEach(el => {
+            el.classList.remove('correct', 'incorrect');
+        });
+
+        cards.forEach(card => {
+            const correctAnswer = card.getAttribute('data-correct');
+            const selectedInput = card.querySelector('input:checked');
+
+            if (selectedInput) {
+                answeredCount++;
+                const label = selectedInput.parentElement;
+                
+                if (selectedInput.value === correctAnswer) {
+                    label.classList.add('correct');
+                    correctCount++;
+                } else {
+                    label.classList.add('incorrect');
+                }
+            }
+        });
+
+        feedbackEl.classList.add('visible');
+        if (answeredCount < total) {
+            feedbackEl.textContent = "Bitte treffen Sie für alle Situationen eine Entscheidung.";
+            feedbackEl.className = "feedback-error visible";
+        } else if (correctCount === total) {
+            feedbackEl.textContent = "Hervorragend! Sie haben die Situationen richtig eingeschätzt.";
+            feedbackEl.className = "feedback-success visible";
+        } else {
+            feedbackEl.textContent = `Sie haben ${correctCount} von ${total} Situationen richtig gelöst.`;
+            feedbackEl.className = "feedback-error visible";
+        }
+    }
+
+    function resetTask() {
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.checked = false;
+        });
+        document.querySelectorAll('.option-label').forEach(el => {
+            el.classList.remove('correct', 'incorrect');
+        });
+        feedbackEl.textContent = "";
+        feedbackEl.className = "";
+    }
+
+    function showSolution() {
+        resetTask();
+
+        cards.forEach(card => {
+            const correctVal = card.getAttribute('data-correct');
+            const correctInput = card.querySelector(`input[value="${correctVal}"]`);
+            if (correctInput) {
+                correctInput.checked = true;
+                correctInput.parentElement.classList.add('correct');
+            }
+        });
+
+        feedbackEl.textContent = "Hier sind die logisch richtigen Antworten.";
+        feedbackEl.className = "feedback-success visible";
+    }
+</script>
+
+</body>
+</html>
