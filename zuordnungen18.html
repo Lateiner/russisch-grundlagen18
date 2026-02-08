@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Bild-Verb Zuordnung (6 Beispiele)</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --success: #27ae60;
+            --error: #c0392b;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --border: #bdc3c7;
+            --transport-color: #e67e22; /* Farbe für Fahrzeuge */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: #2c3e50;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .instruction {
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        /* Layout Bereiche */
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Die Verben (Draggables) */
+        .source-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+            min-height: 60px;
+        }
+
+        .draggable {
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: grab;
+            font-size: 1rem;
+            font-weight: bold;
+            user-select: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.1s, background-color 0.3s;
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+            transform: scale(0.98);
+        }
+
+        .draggable.correct {
+            background-color: var(--success);
+            border: 2px solid #1e8449;
+        }
+
+        .draggable.incorrect {
+            background-color: var(--error);
+            border: 2px solid #922b21;
+        }
+
+        /* Die Bilder (Dropzones) - Grid für 6 Elemente */
+        .targets-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .section-title {
+            grid-column: 1 / -1;
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .target-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .image-area {
+            width: 100%;
+            height: 140px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-area svg {
+            width: 90%;
+            height: 90%;
+        }
+
+        .dropzone {
+            width: 100%;
+            height: 60px; /* Platz für das Verb */
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .dropzone.drag-over {
+            background-color: #ebf5fb;
+            border-top: 2px dashed var(--primary);
+        }
+
+        .scene-desc {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            padding: 5px;
+            text-align: center;
+            background: #fff;
+            width: 100%;
+            border-bottom: 1px dotted #eee;
+        }
+
+        /* Buttons */
+        .btn-group {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.9; }
+        
+        .btn-check { background-color: var(--success); }
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solve { background-color: var(--warning-color, #f39c12); }
+
+        /* Feedback Text */
+        #feedback {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 24px;
+        }
+        .feedback-success { color: var(--success); }
+        .feedback-error { color: var(--error); }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Bild ↔ Verb Zuordnung (под-, до-, при-)</h2>
+    <p class="instruction">Ziehen Sie das passende Verb unter das Bild. Achten Sie darauf, ob jemand geht oder fährt!</p>
+
+    <div class="game-area">
+        
+        <!-- Quelle: Die Verben -->
+        <div class="source-container" id="source">
+            <div class="draggable" draggable="true" id="v-pod-walk">подойти</div>
+            <div class="draggable" draggable="true" id="v-do-walk">дойти</div>
+            <div class="draggable" draggable="true" id="v-pri-walk">прийти</div>
+            
+            <div class="draggable" draggable="true" id="v-pod-drive" style="background-color: var(--transport-color);">подъехать</div>
+            <div class="draggable" draggable="true" id="v-do-drive" style="background-color: var(--transport-color);">доехать</div>
+            <div class="draggable" draggable="true" id="v-pri-drive" style="background-color: var(--transport-color);">приехать</div>
+        </div>
+
+        <!-- Ziel: Die Bilder -->
+        <div class="targets-container">
+            
+            <!-- SECTION 1: GEHEN -->
+            <div class="section-title">Zu Fuß gehen (идти)</div>
+
+            <!-- 1. Annäherung (Pod-Walk) -->
+            <div class="target-card">
+                <div class="image-area">
+                    <svg viewBox="0 0 200 150">
+                        <!-- Haus -->
+                        <rect x="120" y="40" width="50" height="80" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2"/>
+                        <!-- Person -->
+                        <circle cx="60" cy="110" r="12" fill="#3498db" />
+                        <line x1="60" y1="122" x2="60" y2="140" stroke="#2c3e50" stroke-width="3"/>
+                        <!-- Pfeil stoppt VOR Haus -->
+                        <line x1="75" y1="110" x2="110" y2="110" stroke="#e74c3c" stroke-width="3" marker-end="url(#arrowhead)"/>
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                              <polygon points="0 0, 10 3.5, 0 7" fill="#e74c3c" />
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="scene-desc">Sich nähern (zu Fuß)</div>
+                <div class="dropzone" data-target="v-pod-walk"></div>
+            </div>
+
+            <!-- 2. Grenze/Distanz (Do-Walk) -->
+            <div class="target-card">
+                <div class="image-area">
+                    <svg viewBox="0 0 200 150">
+                        <!-- Ziellinie -->
+                        <line x1="170" y1="20" x2="170" y2="130" stroke="#2c3e50" stroke-width="4" stroke-dasharray="5,5"/>
+                        <!-- Startpunkt -->
+                        <circle cx="20" cy="75" r="5" fill="#bdc3c7"/>
+                        <!-- Langer Weg -->
+                        <path d="M 25 75 Q 60 40 90 75 T 155 75" fill="none" stroke="#e74c3c" stroke-width="3" stroke-dasharray="4"/>
+                        <!-- Person am Ziel -->
+                        <circle cx="155" cy="75" r="12" fill="#3498db" />
+                        <line x1="155" y1="87" x2="155" y2="105" stroke="#2c3e50" stroke-width="3"/>
+                    </svg>
+                </div>
+                <div class="scene-desc">Bis zur Grenze schaffen (zu Fuß)</div>
+                <div class="dropzone" data-target="v-do-walk"></div>
+            </div>
+
+            <!-- 3. Ankunft (Pri-Walk) -->
+            <div class="target-card">
+                <div class="image-area">
+                    <svg viewBox="0 0 200 150">
+                         <!-- Haus -->
+                         <rect x="70" y="30" width="80" height="100" fill="#ecf0f1" stroke="#2c3e50" stroke-width="3"/>
+                         <!-- Tür offen -->
+                         <rect x="95" y="80" width="30" height="50" fill="#bdc3c7" stroke="none"/>
+                         <!-- Person DRINNEN -->
+                         <circle cx="110" cy="100" r="12" fill="#3498db" />
+                         <line x1="110" y1="112" x2="110" y2="130" stroke="#2c3e50" stroke-width="3"/>
+                         <text x="40" y="140" font-size="14" fill="#27ae60" font-weight="bold">Check ✓</text>
+                    </svg>
+                </div>
+                <div class="scene-desc">Angekommen sein (zu Fuß)</div>
+                <div class="dropzone" data-target="v-pri-walk"></div>
+            </div>
+
+            <!-- SECTION 2: FAHREN -->
+            <div class="section-title">Mit Transport fahren (ехать)</div>
+
+            <!-- 4. Heranfahren (Pod-Drive) -->
+            <div class="target-card">
+                <div class="image-area">
+                    <svg viewBox="0 0 200 150">
+                        <!-- Bushaltestelle Schild -->
+                        <line x1="160" y1="40" x2="160" y2="140" stroke="#7f8c8d" stroke-width="4"/>
+                        <circle cx="160" cy="40" r="15" fill="#f1c40f" stroke="#f39c12"/>
+                        <text x="155" y="45" font-size="12" font-weight="bold">H</text>
+                        <!-- Auto (Rechteck mit Rädern) -->
+                        <rect x="40" y="100" width="60" height="30" rx="5" fill="#e67e22"/>
+                        <circle cx="55" cy="130" r="8" fill="#333"/>
+                        <circle cx="85" cy="130" r="8" fill="#333"/>
+                        <!-- Pfeil kurz vor Schild -->
+                        <line x1="105" y1="115" x2="140" y2="115" stroke="#e74c3c" stroke-width="3" marker-end="url(#arrowhead)"/>
+                    </svg>
+                </div>
+                <div class="scene-desc">Heranfahren (kurz davor)</div>
+                <div class="dropzone" data-target="v-pod-drive"></div>
+            </div>
+
+            <!-- 5. Strecke fahren (Do-Drive) -->
+            <div class="target-card">
+                <div class="image-area">
+                    <svg viewBox="0 0 200 150">
+                        <!-- Landkarte Symbolik -->
+                        <rect x="20" y="20" width="160" height="110" fill="#fdfefe" stroke="#bdc3c7" stroke-width="1"/>
+                        <!-- Start Stadt A -->
+                        <circle cx="40" cy="100" r="5" fill="#333"/>
+                        <text x="30" y="120" font-size="10">A</text>
+                        <!-- Ziel Stadt B -->
+                        <circle cx="160" cy="40" r="5" fill="#e74c3c"/>
+                        <text x="155" y="30" font-size="10" fill="#e74c3c">B</text>
+                        <!-- Pfad -->
+                        <path d="M 40 100 Q 80 120 100 80 T 160 40" fill="none" stroke="#e67e22" stroke-width="3" stroke-dasharray="4"/>
+                        <!-- Auto am Ziel -->
+                        <rect x="145" y="45" width="20" height="10" fill="#e67e22"/>
+                    </svg>
+                </div>
+                <div class="scene-desc">Bis zum Ziel fahren (Strecke)</div>
+                <div class="dropzone" data-target="v-do-drive"></div>
+            </div>
+
+            <!-- 6. Ankunft Fahren (Pri-Drive) -->
+            <div class="target-card">
+                <div class="image-area">
+                    <svg viewBox="0 0 200 150">
+                        <!-- Skyline / Stadt -->
+                        <polygon points="120,130 120,60 140,40 160,60 160,130" fill="#bdc3c7"/>
+                        <rect x="165" y="70" width="30" height="60" fill="#95a5a6"/>
+                        <!-- Ortsschild -->
+                        <rect x="10" y="30" width="80" height="30" fill="#f1c40f" stroke="#000"/>
+                        <text x="20" y="50" font-size="12" font-family="Arial">BERLIN</text>
+                        <!-- Auto ist DA -->
+                        <rect x="70" y="100" width="60" height="30" rx="5" fill="#e67e22"/>
+                        <circle cx="85" cy="130" r="8" fill="#333"/>
+                        <circle cx="115" cy="130" r="8" fill="#333"/>
+                        <text x="30" y="130" font-size="14" fill="#27ae60" font-weight="bold">Angekommen!</text>
+                    </svg>
+                </div>
+                <div class="scene-desc">Angekommen (mit Fahrzeug)</div>
+                <div class="dropzone" data-target="v-pri-drive"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="btn-reset" onclick="resetTask()">Zurücksetzen</button>
+        <button class="btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+    <div id="feedback"></div>
+</div>
+
+<script>
+    const draggables = document.querySelectorAll('.draggable');
+    const dropzones = document.querySelectorAll('.dropzone');
+    const sourceContainer = document.getElementById('source');
+    const feedbackEl = document.getElementById('feedback');
+
+    // --- Drag & Drop Events ---
+    draggables.forEach(draggable => {
+        draggable.addEventListener('dragstart', () => {
+            draggable.classList.add('dragging');
+        });
+        draggable.addEventListener('dragend', () => {
+            draggable.classList.remove('dragging');
+        });
+    });
+
+    dropzones.forEach(dropzone => {
+        dropzone.addEventListener('dragover', e => {
+            e.preventDefault(); 
+            dropzone.classList.add('drag-over');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('drag-over');
+        });
+
+        dropzone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropzone.classList.remove('drag-over');
+            const draggable = document.querySelector('.dragging');
+            
+            // Wenn schon ein Element drin ist, tausche es zurück zum Source
+            if (dropzone.children.length > 0) {
+                sourceContainer.appendChild(dropzone.firstElementChild);
+            }
+            dropzone.appendChild(draggable);
+            draggable.classList.remove('correct', 'incorrect');
+        });
+    });
+    
+    // Zurücklegen in den Ursprungscontainer
+    sourceContainer.addEventListener('dragover', e => {
+        e.preventDefault();
+    });
+    sourceContainer.addEventListener('drop', e => {
+        e.preventDefault();
+        const draggable = document.querySelector('.dragging');
+        if(draggable) {
+            sourceContainer.appendChild(draggable);
+            draggable.classList.remove('correct', 'incorrect');
+        }
+    });
+
+    // --- Funktionen ---
+
+    function checkAnswers() {
+        let correctCount = 0;
+        let filledCount = 0;
+
+        dropzones.forEach(zone => {
+            const item = zone.firstElementChild;
+            if (item) {
+                filledCount++;
+                const correctId = zone.getAttribute('data-target');
+                if (item.id === correctId) {
+                    item.classList.add('correct');
+                    item.classList.remove('incorrect');
+                    correctCount++;
+                } else {
+                    item.classList.add('incorrect');
+                    item.classList.remove('correct');
+                }
+            }
+        });
+
+        if (filledCount < 6) {
+            feedbackEl.textContent = "Bitte ordnen Sie alle 6 Verben zu.";
+            feedbackEl.className = "feedback-error";
+        } else if (correctCount === 6) {
+            feedbackEl.textContent = "Hervorragend! Alle Situationen richtig erkannt.";
+            feedbackEl.className = "feedback-success";
+        } else {
+            feedbackEl.textContent = `Sie haben ${correctCount} von 6 richtig.`;
+            feedbackEl.className = "feedback-error";
+        }
+    }
+
+    function resetTask() {
+        draggables.forEach(item => {
+            sourceContainer.appendChild(item);
+            item.classList.remove('correct', 'incorrect');
+        });
+        feedbackEl.textContent = "";
+        feedbackEl.className = "";
+    }
+
+    function showSolution() {
+        // Erst alles zurücksetzen
+        resetTask();
+        
+        // Elemente in die richtigen Zonen verschieben
+        dropzones.forEach(zone => {
+            const targetId = zone.getAttribute('data-target');
+            const item = document.getElementById(targetId);
+            if(item) {
+                zone.appendChild(item);
+                item.classList.add('correct');
+            }
+        });
+        
+        feedbackEl.textContent = "Hier ist die richtige Lösung.";
+        feedbackEl.className = "feedback-success";
+    }
+</script>
+
+</body>
+</html>
