@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch: Präfixe und Grammatik (6 Beispiele)</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #8e44ad;
+            --primary-hover: #732d91;
+            --success: #27ae60;
+            --error: #c0392b;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --border: #bdc3c7;
+            --text: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-top: 0;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .instruction {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #555;
+            font-size: 1.1rem;
+        }
+
+        /* --- Drag Area (Die Präfixe) --- */
+        .source-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 20px;
+            background-color: #f0f3f4;
+            border-radius: 8px;
+            min-height: 60px;
+            margin-bottom: 30px;
+            border: 2px dashed #dcdcdc;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .draggable {
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            cursor: grab;
+            font-size: 1.2rem;
+            font-weight: bold;
+            user-select: none;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+            transition: all 0.2s ease;
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        .draggable.correct {
+            background-color: var(--success);
+            border: 2px solid #1e8449;
+            box-shadow: none;
+        }
+
+        .draggable.incorrect {
+            background-color: var(--error);
+            border: 2px solid #922b21;
+        }
+
+        /* --- Drop Area (Die Definitionen) --- */
+        .targets-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Zwei Spalten auf Desktop */
+            gap: 20px;
+        }
+
+        .column-title {
+            grid-column: 1 / -1;
+            font-weight: bold;
+            color: #7f8c8d;
+            border-bottom: 1px solid #eee;
+            margin-top: 10px;
+            padding-bottom: 5px;
+        }
+
+        .target-row {
+            display: flex;
+            align-items: stretch; /* Gleiche Höhe */
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            min-height: 90px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .definition-text {
+            flex: 1;
+            padding: 15px;
+            font-size: 0.95rem;
+            background-color: #fafafa;
+            border-right: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .dropzone {
+            width: 110px;
+            min-width: 110px;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .dropzone.drag-over {
+            background-color: #e8daef;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        /* Platzhalter ? */
+        .dropzone:empty::before {
+            content: '?';
+            font-size: 2rem;
+            color: #eee;
+            font-weight: bold;
+        }
+
+        /* Buttons */
+        .btn-group {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        button:active { transform: translateY(1px); }
+        button:hover { opacity: 0.9; }
+        
+        .btn-check { background-color: var(--success); }
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solve { background-color: #f39c12; }
+
+        /* Feedback Text */
+        #feedback {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        #feedback.visible { display: block; }
+        .feedback-success { background-color: #d5f5e3; color: #196f3d; }
+        .feedback-error { background-color: #fadbd8; color: #943126; }
+
+        /* --- Responsivität --- */
+        @media (max-width: 768px) {
+            .targets-wrapper {
+                grid-template-columns: 1fr; /* Eine Spalte auf Mobile */
+            }
+            .target-row {
+                flex-direction: row; /* Immer noch nebeneinander */
+            }
+        }
+
+        @media (max-width: 480px) {
+             .target-row {
+                flex-direction: column; /* Untereinander auf sehr kleinen Screens */
+            }
+            .definition-text {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                min-height: 60px;
+            }
+            .dropzone {
+                width: 100%;
+                height: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Präfix ↔ Definition & Grammatik</h2>
+    <p class="instruction">Ziehen Sie das russische Präfix zur passenden Beschreibung.</p>
+
+    <!-- Quelle: Die Präfixe (Mehrfach vorhanden für verschiedene Slots) -->
+    <div class="source-container" id="source">
+        <!-- Wir nutzen data-type für die Logik -->
+        <div class="draggable" draggable="true" data-type="pod">под-</div>
+        <div class="draggable" draggable="true" data-type="do">до-</div>
+        <div class="draggable" draggable="true" data-type="pri">при-</div>
+        <div class="draggable" draggable="true" data-type="pod">под-</div>
+        <div class="draggable" draggable="true" data-type="pri">при-</div>
+        <div class="draggable" draggable="true" data-type="do">до-</div>
+    </div>
+
+    <!-- Ziel: Die Definitionen (6 Stück) -->
+    <div class="targets-wrapper">
+        
+        <!-- TEIL 1: BEDEUTUNG -->
+        <div class="column-title">Bedeutung (Semantik)</div>
+
+        <div class="target-row">
+            <div class="definition-text">
+                Sich einem Objekt nähern / daneben stehen bleiben.
+            </div>
+            <div class="dropzone" data-accept="pod"></div>
+        </div>
+
+        <div class="target-row">
+            <div class="definition-text">
+                Eine Grenze erreichen / eine Distanz zurücklegen.
+            </div>
+            <div class="dropzone" data-accept="do"></div>
+        </div>
+
+        <div class="target-row">
+            <div class="definition-text">
+                Am Zielort ankommen (Resultat).
+            </div>
+            <div class="dropzone" data-accept="pri"></div>
+        </div>
+
+        <!-- TEIL 2: GRAMMATIK -->
+        <div class="column-title">Grammatik (Fälle & Präpositionen)</div>
+
+        <div class="target-row">
+            <div class="definition-text">
+                Verlangt die Präposition "к" (zu) + Dativ.
+            </div>
+            <div class="dropzone" data-accept="pod"></div>
+        </div>
+
+        <div class="target-row">
+            <div class="definition-text">
+                Verlangt oft die Präposition "в/на" + Akkusativ.
+            </div>
+            <div class="dropzone" data-accept="pri"></div>
+        </div>
+
+        <div class="target-row">
+            <div class="definition-text">
+                Verlangt die Präposition "до" (bis) + Genitiv.
+            </div>
+            <div class="dropzone" data-accept="do"></div>
+        </div>
+
+    </div>
+
+    <!-- Controls -->
+    <div class="btn-group">
+        <button class="btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="btn-reset" onclick="resetTask()">Zurücksetzen</button>
+        <button class="btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+    <div id="feedback"></div>
+</div>
+
+<script>
+    const draggables = document.querySelectorAll('.draggable');
+    const dropzones = document.querySelectorAll('.dropzone');
+    const sourceContainer = document.getElementById('source');
+    const feedbackEl = document.getElementById('feedback');
+
+    // --- Drag & Drop Events ---
+    draggables.forEach(draggable => {
+        draggable.addEventListener('dragstart', () => {
+            draggable.classList.add('dragging');
+        });
+        draggable.addEventListener('dragend', () => {
+            draggable.classList.remove('dragging');
+        });
+    });
+
+    dropzones.forEach(dropzone => {
+        dropzone.addEventListener('dragover', e => {
+            e.preventDefault(); 
+            dropzone.classList.add('drag-over');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('drag-over');
+        });
+
+        dropzone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropzone.classList.remove('drag-over');
+            const draggable = document.querySelector('.dragging');
+            
+            // Swap Logic: Wenn Dropzone voll, Element zurück zur Quelle
+            if (dropzone.children.length > 0) {
+                const existing = dropzone.firstElementChild;
+                sourceContainer.appendChild(existing);
+                existing.classList.remove('correct', 'incorrect');
+            }
+            
+            if(draggable) {
+                dropzone.appendChild(draggable);
+                draggable.classList.remove('correct', 'incorrect');
+            }
+        });
+    });
+    
+    // Zurück zur Quelle
+    sourceContainer.addEventListener('dragover', e => {
+        e.preventDefault();
+    });
+    sourceContainer.addEventListener('drop', e => {
+        e.preventDefault();
+        const draggable = document.querySelector('.dragging');
+        if(draggable) {
+            sourceContainer.appendChild(draggable);
+            draggable.classList.remove('correct', 'incorrect');
+        }
+    });
+
+    // --- Logik Funktionen ---
+
+    function checkAnswers() {
+        let correctCount = 0;
+        let filledCount = 0;
+        const total = 6;
+
+        dropzones.forEach(zone => {
+            const item = zone.firstElementChild;
+            if (item) {
+                filledCount++;
+                // Wir prüfen data-type des Draggables gegen data-accept der Dropzone
+                const itemType = item.getAttribute('data-type');
+                const targetType = zone.getAttribute('data-accept');
+                
+                if (itemType === targetType) {
+                    item.classList.add('correct');
+                    item.classList.remove('incorrect');
+                    correctCount++;
+                } else {
+                    item.classList.add('incorrect');
+                    item.classList.remove('correct');
+                }
+            }
+        });
+
+        feedbackEl.classList.add('visible');
+        if (filledCount < total) {
+            feedbackEl.textContent = "Bitte füllen Sie alle 6 Felder aus.";
+            feedbackEl.className = "feedback-error visible";
+        } else if (correctCount === total) {
+            feedbackEl.textContent = "Perfekt! Alle Bedeutungen und Grammatik-Regeln stimmen.";
+            feedbackEl.className = "feedback-success visible";
+        } else {
+            feedbackEl.textContent = `Sie haben ${correctCount} von ${total} richtig zugeordnet.`;
+            feedbackEl.className = "feedback-error visible";
+        }
+    }
+
+    function resetTask() {
+        // Alle Draggables zurück in den Source Container
+        // Da wir dynamisch verschoben haben, müssen wir sie sammeln
+        const allDraggables = document.querySelectorAll('.draggable');
+        
+        // Randomize order for fun (optional, but nice)
+        const shuffled = Array.from(allDraggables).sort(() => Math.random() - 0.5);
+
+        shuffled.forEach(item => {
+            sourceContainer.appendChild(item);
+            item.classList.remove('correct', 'incorrect');
+        });
+        
+        feedbackEl.textContent = "";
+        feedbackEl.className = "";
+    }
+
+    function showSolution() {
+        // Strategie: Wir iterieren durch die Dropzones und suchen im Source-Container
+        // nach einem passenden Element. Wenn keins da ist (weil falsch zugeordnet),
+        // holen wir es aus der falschen Dropzone.
+        
+        resetTask(); // Erst alles sauber in Source zurück
+
+        dropzones.forEach(zone => {
+            const requiredType = zone.getAttribute('data-accept');
+            
+            // Suche ein passendes Element im Source Container
+            const candidate = sourceContainer.querySelector(`.draggable[data-type="${requiredType}"]`);
+            
+            if(candidate) {
+                zone.appendChild(candidate);
+                candidate.classList.add('correct');
+            }
+        });
+        
+        feedbackEl.textContent = "Hier ist die Lösung.";
+        feedbackEl.className = "feedback-success visible";
+    }
+</script>
+
+</body>
+</html>
